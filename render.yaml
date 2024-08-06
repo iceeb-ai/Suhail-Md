@@ -3,7 +3,7 @@ services:
 - type: web
   name: Suhail-Md
   runtime: docker
-  repo: https://github.com/iceeb-ai/Suhail-Md
+  repo: https://github.com/SuhailTechInfo/Suhail-Md
   plan: free
   envVars:
   - key: TZ
