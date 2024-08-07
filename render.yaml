@@ -28,4 +28,4 @@ services:
   region: oregon
   dockerContext: .
   dockerfilePath: ./Dockerfile
-version: "1"
+version: "2"
