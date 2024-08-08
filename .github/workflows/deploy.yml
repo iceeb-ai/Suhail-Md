@@ -2,34 +2,46 @@ name: Node.js CI
 
 on:
   push:
-    branches:
-      - main
-      
-jobs:
-  build:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: "*/10 * * * *"  # Run every 10 minutes
+  workflow_dispatch:  # This allows you to manually trigger the workflow
 
+jobs:
+  build-and-start:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     steps:
-    - name: Checkout Suhail-Md repository
-      uses: actions/checkout@v3
-
-    - name: Set up Node.js
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js 20
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: '20'
+        
+    - name: Install dependencies
+      run: npm install || yarn install --network-concurrency 1
+      
+    - name: Set start time
+      id: start-time
+      run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
 
-    - name: Install libraries
-      run: npm install
+    - name: Start application
+      run: |
+        echo "Running application..."
+        npm start &
+        APP_PID=$!
+        
+        # Wait for 10 minutes (600 seconds)
+        sleep 600
 
-    - name: Start Suhail-Md
-    
-      env:
-          OWNER_NAME:
-          OWNER_NUMBER:
-          SESSION_ID:
-      run: npm start
+        # After 10 minutes, restart the application
+        echo "Restarting application..."
+        kill $APP_PID  # Stop the current instance
+        sleep 5  # Allow time for cleanup
+        npm start &   # Start a new instance
+        echo "New instance started."
+        echo "APP_PID=$!" >> $GITHUB_ENV  # Update application PID for the new instance
+
